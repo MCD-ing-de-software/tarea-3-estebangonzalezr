@@ -93,7 +93,6 @@ class TestDataCleaner(unittest.TestCase):
 
 
         self.assertLess(len(result), len(df))
-
     def test_drop_invalid_rows_raises_keyerror_for_unknown_column(self):
         """Test que verifica que el método drop_invalid_rows lanza un KeyError cuando
         se llama con una columna que no existe en el DataFrame.
@@ -122,6 +121,29 @@ class TestDataCleaner(unittest.TestCase):
         - Verificar que en el DataFrame resultante los valores de "name" no tienen espacios al inicio/final (usar self.assertEqual para comparar valores específicos como strings individuales - unittest es suficiente)
         - Verificar que las columnas no especificadas (ej: "city") permanecen sin cambios (si comparas Series completas, usar pandas.testing.assert_series_equal() ya que maneja mejor los índices y tipos de Pandas; si comparas valores individuales, self.assertEqual es suficiente)
         """
+        df = make_sample_df()
+        cleaner = DataCleaner()
+
+
+        df["name"] = df["name"].astype("string")
+
+
+        original = df.copy(deep=True)
+
+        result = cleaner.trim_strings(df, ["name"])
+
+
+        pdt.assert_frame_equal(df, original)
+
+
+        self.assertEqual(result.loc[0, "name"], "Alice")
+        self.assertEqual(result.loc[1, "name"], "Bob")
+
+        self.assertTrue(pd.isna(result.loc[2, "name"]))
+        self.assertEqual(result.loc[3, "name"], "Carol")
+
+
+        pdt.assert_series_equal(result["city"], original["city"])                                                                                                                    
 
     def test_trim_strings_raises_typeerror_for_non_string_column(self):
         """Test que verifica que el método trim_strings lanza un TypeError cuando
